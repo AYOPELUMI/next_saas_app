@@ -21,7 +21,7 @@ const Navbar = () => {
                 <NavItems />
                 <div className="flex items-center gap-2">
                     <SignedIn>
-                        <UserButton afterSignOutUrl="/" />
+                        <UserButton />
                     </SignedIn>
                     <SignedOut>
                         <SignInButton>

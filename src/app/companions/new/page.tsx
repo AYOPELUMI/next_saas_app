@@ -1,13 +1,19 @@
-'use server'
 
+
+// 'use client'
 import CompanionForm from '@/components/companionForm'
+// import { useUser } from '@clerk/nextjs'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import React from 'react'
 
 const NewCompanion = async () => {
-    const { userId } = await auth();
-    if (!userId) {
+    const authData = await auth();
+    console.log({ authData })
+    // const { user } = useUser()
+
+    // if (!user?.id) {
+    if (!authData.userId) {
         redirect('/sign-in')
     }
     return (
@@ -15,7 +21,7 @@ const NewCompanion = async () => {
             <article className='w-full gap-4 flex flex-col'>
                 <h1>Companion Builder</h1>
 
-                <CompanionForm />
+                <CompanionForm userId={authData.userId} />
             </article>
 
         </main>

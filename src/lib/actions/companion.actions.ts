@@ -2,15 +2,18 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { createSupabaseClient } from "../supabase";
+import { Author } from "@/components/companionForm";
 
-export const createCompanion = async (foemData: Companion) => {
-    const { userId: author } = await auth();
+export const createCompanion = async (formData: CreateCompanion, userId: Author) => {
+
     const supabase = createSupabaseClient();
-    const { data, error } = await supabase.from("companions").insert({ ...FormData, author }).select();
+    console.log({ userId })
+    const { data, error } = await supabase
+        .from('companions')
+        .insert({ ...formData, ...userId })
+        .select().single();
 
-    if (error || !data) {
-        throw new Error(error?.message ?? "Failed to a create Companion");
+    if (error) throw new Error(error?.message || 'Failed to create a companion');
 
-    }
     return data[0];
 }

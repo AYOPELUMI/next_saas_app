@@ -5,28 +5,24 @@ import React from 'react'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { minLength } from 'zod/v4'
 import { Button } from "@/components/ui/button"
 import {
     Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+
 } from "@/components/ui/form"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+
 import FormFieldInput from './form fields/formFieldInput'
 import { subjects } from '@/constants'
 import FormFieldSelect from './form fields/formFieldSelect'
 import FormFieldTextArea from './form fields/formFieldTextArea'
+import { createCompanion } from '@/lib/actions/companion.actions'
+import { redirect } from 'next/navigation'
+import { toast } from 'sonner'
+import { useFormStatus } from 'react-dom'
+
+export interface Author {
+    author: string
+}
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Companion is required" }),
@@ -36,9 +32,10 @@ const formSchema = z.object({
     style: z.string().min(1, { message: "Style is required" }),
     duration: z.coerce.number().min(1, { message: "Duration is required" }),
 })
-const CompanionForm = () => {
+const CompanionForm = ({ userId }: { userId: string }) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+
         defaultValues: {
             name: "",
             subject: "",
@@ -49,11 +46,19 @@ const CompanionForm = () => {
 
         },
     })
+    const { pending } = useFormStatus()
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        const companion = await createCompanion(values, { author: userId });
+        if (companion) {
+            toast.success("Companion created successfully")
+            redirect(`companiions/${companion.id}`);
+        }
+        else {
+            toast.error("Failed to create companion");
+            console.log("Failed to create companion");
+            // redirect("/");
+        }
     }
     return (
         <Form {...form}>
@@ -85,7 +90,7 @@ const CompanionForm = () => {
                 />
                 <FormFieldInput type='number' name={"duration"} placeholder={'Estimated session duration in minutes'} label={'Duration'} form={form} />
 
-                <Button type="submit" className='w-full cursor-pointer'>Build Your Companion</Button>
+                <Button type="submit" className='w-full cursor-pointer'>{pending ? "Building..." : "Build Your Companion"}</Button>
             </form>
         </Form>
     )
